@@ -1,0 +1,2218 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <title>양액 계산기 v11</title>
+
+  <!-- =========================
+       PWA
+  ========================== -->
+
+  <link rel="manifest" href="./manifest.json">
+
+  <meta name="theme-color" content="#007bff">
+
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="192x192"
+    href="./icon-192.png"
+  >
+
+  <link
+    rel="apple-touch-icon"
+    sizes="192x192"
+    href="./icon-192.png"
+  >
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="default"
+  >
+
+  <meta
+    name="apple-mobile-web-app-title"
+    content="양액 계산기"
+  >
+
+
+  <style>
+
+    :root {
+      --blue: #007bff;
+      --blue-dark: #0056b3;
+
+      --background: #f7f8fa;
+      --border: #e7eaf0;
+      --text: #222;
+    }
+
+
+    * {
+      box-sizing: border-box;
+    }
+
+
+    body {
+      font-family:
+        Arial,
+        "Noto Sans KR",
+        sans-serif;
+
+      background: var(--background);
+
+      margin: 0;
+      padding: 24px;
+
+      color: var(--text);
+    }
+
+
+    h1 {
+      text-align: center;
+
+      color: var(--blue);
+
+      margin: 0 0 14px;
+    }
+
+
+    .wrap {
+      max-width: 780px;
+      margin: auto;
+    }
+
+
+    .card {
+      background: #fff;
+
+      padding: 20px;
+
+      border-radius: 14px;
+
+      box-shadow:
+        0 6px 16px #00000010;
+
+      margin: 16px 0;
+    }
+
+
+    .head {
+      display: flex;
+
+      justify-content: space-between;
+      align-items: center;
+
+      gap: 10px;
+
+      flex-wrap: wrap;
+    }
+
+
+    .head h2 {
+      margin: 0;
+    }
+
+
+    .row {
+      display: flex;
+
+      gap: 12px;
+
+      flex-wrap: wrap;
+    }
+
+
+    .row > div {
+      flex: 1 1 220px;
+    }
+
+
+    label {
+      display: block;
+
+      font-weight: 700;
+
+      line-height: 1.35;
+
+      min-height: 2.7em;
+
+      margin: 14px 0 6px;
+    }
+
+
+    input {
+      width: 100%;
+
+      padding: 11px;
+
+      border:
+        1px solid #ccd3dc;
+
+      border-radius: 9px;
+
+      font-size: 1rem;
+    }
+
+
+    input:focus {
+      outline: none;
+
+      border-color: var(--blue);
+
+      box-shadow:
+        0 0 0 3px #007bff18;
+    }
+
+
+    input:disabled {
+      background: #f2f4f8;
+
+      color: #555;
+    }
+
+
+    .btn {
+      width: 100%;
+
+      border: 0;
+
+      border-radius: 10px;
+
+      background: var(--blue);
+
+      color: #fff;
+
+      font-weight: 800;
+      font-size: 1rem;
+
+      padding: 12px;
+
+      margin-top: 18px;
+
+      cursor: pointer;
+    }
+
+
+    .btn:hover {
+      background: var(--blue-dark);
+    }
+
+
+    table {
+      width: 100%;
+
+      border-collapse: collapse;
+
+      margin-top: 16px;
+    }
+
+
+    th,
+    td {
+      padding: 10px;
+
+      border-bottom:
+        1px solid var(--border);
+
+      text-align: left;
+    }
+
+
+    th {
+      background: #f5f8ff;
+    }
+
+
+    .meta,
+    .debug {
+      white-space: pre-line;
+
+      line-height: 1.55;
+
+      margin-top: 14px;
+    }
+
+
+    .meta {
+      background: #f8fbff;
+
+      border:
+        1px solid #e1ebff;
+
+      border-radius: 10px;
+
+      padding: 12px;
+    }
+
+
+    details {
+      margin-top: 12px;
+    }
+
+
+    summary {
+      cursor: pointer;
+
+      font-weight: 700;
+
+      color: #274690;
+    }
+
+
+    .note {
+      font-size: .92rem;
+
+      color: #555;
+
+      line-height: 1.5;
+
+      margin-top: 8px;
+    }
+
+
+    .unit {
+      display: flex;
+
+      gap: 8px;
+
+      align-items: center;
+    }
+
+
+    .unit button {
+      border:
+        1px solid #d9e2ff;
+
+      background: #f0f4ff;
+
+      border-radius: 8px;
+
+      padding: 7px 10px;
+
+      cursor: pointer;
+    }
+
+
+    .unit button.on {
+      background: #dce8ff;
+
+      font-weight: 800;
+    }
+
+
+    @media (max-width: 480px) {
+
+      body {
+        padding: 14px;
+      }
+
+      table {
+        font-size: .9rem;
+      }
+
+      .card {
+        padding: 16px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<h1>양액 배합 계산기 v11</h1>
+
+
+<div class="wrap">
+
+  <div class="card">
+
+
+    <div class="head">
+
+      <h2>
+        정밀 보정 · AB 800배 고정
+      </h2>
+
+
+      <div class="unit">
+
+        <button
+          id="uUL"
+          class="on"
+        >
+          µL
+        </button>
+
+        <button id="uML">
+          mL
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="note">
+
+      A/B는 제조사 토마토 육묘기
+      800배 기준인 각각 1.25 mL/L를
+      hard floor로 사용합니다.
+
+      목표 EC는 조성을 변경해서
+      강제로 맞추지 않고 예상 EC와 비교합니다.
+
+    </div>
+
+
+    <!-- =========================
+         기본 설정
+    ========================== -->
+
+    <div class="row">
+
+      <div>
+
+        <label>
+          배합 용량 (L)
+        </label>
+
+        <input
+          id="V"
+          type="number"
+          min="0.1"
+          step="0.1"
+          value="5"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          목표 EC (mS/cm, 비교용)
+        </label>
+
+        <input
+          id="Et"
+          type="number"
+          min="0"
+          step="0.01"
+          value="2.0"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          AB 고정 농도
+        </label>
+
+        <input
+          value="A 1.25 + B 1.25 mL/L"
+          disabled
+        >
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         목표 ppm
+    ========================== -->
+
+    <div class="row">
+
+      <div>
+
+        <label>
+          목표 P (ppm, 원소)
+        </label>
+
+        <input
+          id="Pt"
+          type="number"
+          min="0"
+          step="1"
+          value="40"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          목표 Ca (ppm, 원소)
+        </label>
+
+        <input
+          id="Cat"
+          type="number"
+          min="0"
+          step="1"
+          value="150"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          목표 Mg (ppm, 원소)
+        </label>
+
+        <input
+          id="Mgt"
+          type="number"
+          min="0"
+          step="1"
+          value="50"
+        >
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         N:K
+    ========================== -->
+
+    <div class="row">
+
+      <div>
+
+        <label>
+          목표 N:K — K 비율값
+        </label>
+
+        <input
+          id="Kr"
+          type="number"
+          min="0.01"
+          step="0.01"
+          value="1.5"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          목표 N:K — N 비율값
+        </label>
+
+        <input
+          id="Nr"
+          type="number"
+          min="0.01"
+          step="0.01"
+          value="1"
+        >
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         EC 실험값
+    ========================== -->
+
+    <div class="row">
+
+      <div>
+
+        <label>
+          K₂SO₄ 10 wt% stock
+          <br>
+          100 mL + 100 µL 실측 ΔEC
+        </label>
+
+        <input
+          id="dK"
+          type="number"
+          min="0"
+          step="0.001"
+          value="0.10"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          MgSO₄·7H₂O 10 wt% stock
+          <br>
+          100 mL + 100 µL 실측 ΔEC
+        </label>
+
+        <input
+          id="dMg"
+          type="number"
+          min="0"
+          step="0.001"
+          value="0.10"
+        >
+
+      </div>
+
+    </div>
+
+
+    <div class="row">
+
+      <div>
+
+        <label>
+          질산칼슘 10 wt% stock
+          <br>
+          100 mL + 100 µL 실측 ΔEC
+        </label>
+
+        <input
+          id="dCa"
+          type="number"
+          min="0"
+          step="0.001"
+          value="0.10"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          KH₂PO₄ 10 wt% stock
+          <br>
+          100 mL + 100 µL 실측 ΔEC
+        </label>
+
+        <input
+          id="dP"
+          type="number"
+          min="0"
+          step="0.001"
+          value="0.10"
+        >
+
+      </div>
+
+    </div>
+
+
+    <button
+      class="btn"
+      id="calc"
+    >
+      계산하기
+    </button>
+
+
+    <div id="out"></div>
+
+
+    <div
+      id="meta"
+      class="meta"
+    ></div>
+
+
+    <details>
+
+      <summary>
+        자세히
+      </summary>
+
+      <div
+        id="debug"
+        class="debug"
+      ></div>
+
+    </details>
+
+
+  </div>
+
+</div>
+
+
+
+<script>
+
+"use strict";
+
+
+/*
+====================================================
+
+            수정 가능한 핵심 상수
+
+====================================================
+*/
+
+
+// A/B 원액 밀도 (g/mL)
+const RHO_AB = 1.20;
+
+
+// A/B 최소 투입량
+// mL/L, A와 B 각각
+//
+// 현재:
+// 제조사 토마토 육묘기 800배 기준
+const AB_MIN = 1.25;
+
+
+// 산화물 → 원소 환산계수
+const P2O5_P = 0.4364;
+const K2O_K  = 0.8301;
+const MGO_MG = 0.6030;
+const CAO_CA = 0.7147;
+
+
+/*
+----------------------------------------------------
+
+A액 보증성분
+
+N     5.5 %
+K2O   4.5 %
+CaO   4.5 %
+
+----------------------------------------------------
+*/
+
+const A = {
+
+  N:
+    0.055,
+
+  K:
+    0.045 * K2O_K,
+
+  Ca:
+    0.045 * CAO_CA
+
+};
+
+
+/*
+----------------------------------------------------
+
+B액 보증성분
+
+N      6.0 %
+P2O5   2.0 %
+K2O    4.0 %
+MgO    1.0 %
+
+----------------------------------------------------
+*/
+
+const B = {
+
+  N:
+    0.060,
+
+  P:
+    0.020 * P2O5_P,
+
+  K:
+    0.040 * K2O_K,
+
+  Mg:
+    0.010 * MGO_MG
+
+};
+
+
+/*
+----------------------------------------------------
+
+보정 비료
+
+모든 stock:
+10 wt%
+
+stock 밀도:
+1 g/mL 가정
+
+즉 stock 1 mL에
+비료 제품 약 100 mg
+
+----------------------------------------------------
+*/
+
+const F = {
+
+  // MgSO4·7H2O
+  // elemental Mg
+  MgSO4:
+    0.0986,
+
+
+  // K2SO4
+  // elemental K
+  K2SO4:
+    0.4487,
+
+
+  // 질산칼슘 제품
+  // CaO 26% → elemental Ca
+  Ca:
+    0.26 * CAO_CA,
+
+
+  // 질산칼슘 제품
+  // total N 15.5%
+  CaN:
+    0.155,
+
+
+  // KH2PO4
+  // elemental P
+  MKP_P:
+    0.2276,
+
+
+  // KH2PO4
+  // elemental K
+  MKP_K:
+    0.2873
+
+};
+
+
+
+/*
+====================================================
+
+          A/B 실제 EC 실험 데이터
+
+====================================================
+
+x축:
+
+100 mL 기준
+A와 B 각각의 투입량 (µL)
+
+예:
+
+125
+
+=
+
+A 125 µL
++
+B 125 µL
+/
+100 mL
+
+
+y축:
+
+실측 EC
+mS/cm
+
+
+새 실험값이 생기면
+이 배열만 수정하면 됨.
+
+====================================================
+*/
+
+
+const ECPTS = [
+
+  { u:110, e:1.270 },
+  { u:120, e:1.365 },
+  { u:130, e:1.470 },
+  { u:140, e:1.575 },
+  { u:150, e:1.655 },
+  { u:160, e:1.720 },
+  { u:170, e:1.780 },
+  { u:180, e:1.820 },
+  { u:190, e:1.850 },
+  { u:200, e:1.885 },
+  { u:210, e:1.910 },
+  { u:220, e:1.930 },
+  { u:230, e:1.955 },
+  { u:240, e:1.975 },
+  { u:250, e:2.025 },
+  { u:260, e:2.100 },
+  { u:270, e:2.500 },
+  { u:280, e:2.880 },
+  { u:290, e:3.265 },
+  { u:300, e:3.660 },
+  { u:310, e:3.985 }
+
+];
+
+
+
+/*
+====================================================
+
+                 DOM helpers
+
+====================================================
+*/
+
+
+let displayML = false;
+
+
+const $ = id =>
+  document.getElementById(id);
+
+
+const num = id =>
+  parseFloat($(id).value);
+
+
+
+/*
+====================================================
+
+            A/B EC interpolation
+
+====================================================
+*/
+
+
+function ecAB(u) {
+
+  const p = ECPTS;
+
+
+  if (u <= 0) {
+
+    return 0;
+
+  }
+
+
+  /*
+  실험 최저점 이하
+
+  기존 모델:
+  1 µL당 0.01 mS/cm
+  */
+
+  if (u < p[0].u) {
+
+    return Math.max(
+
+      0,
+
+      p[0].e
+      -
+      (p[0].u - u) * 0.01
+
+    );
+
+  }
+
+
+  /*
+  실험 범위 안에서는
+  구간별 선형보간
+  */
+
+  for (
+    let i = 0;
+    i < p.length - 1;
+    i++
+  ) {
+
+    if (
+      u >= p[i].u
+      &&
+      u <= p[i + 1].u
+    ) {
+
+      return (
+
+        p[i].e
+        +
+        (u - p[i].u)
+
+        *
+
+        (
+          p[i + 1].e
+          -
+          p[i].e
+        )
+
+        /
+
+        (
+          p[i + 1].u
+          -
+          p[i].u
+        )
+
+      );
+
+    }
+
+  }
+
+
+  /*
+  실험 최고점 이상은
+  마지막 두 점의 기울기로 외삽
+  */
+
+  const a =
+    p[p.length - 2];
+
+  const b =
+    p[p.length - 1];
+
+
+  return (
+
+    b.e
+    +
+    (u - b.u)
+
+    *
+
+    (b.e - a.e)
+
+    /
+
+    (b.u - a.u)
+
+  );
+
+}
+
+
+
+/*
+====================================================
+
+              표시 단위
+
+====================================================
+*/
+
+
+function disp(mL) {
+
+  if (displayML) {
+
+    return mL.toFixed(3);
+
+  }
+
+  return (mL * 1000).toFixed(1);
+
+}
+
+
+function unit() {
+
+  return displayML
+    ? "mL"
+    : "µL";
+
+}
+
+
+
+/*
+====================================================
+
+               메인 계산
+
+====================================================
+*/
+
+
+function calculate() {
+
+
+  /*
+  ------------------------------
+  입력
+  ------------------------------
+  */
+
+
+  const V =
+    num("V");
+
+
+  const targetEC =
+    num("Et");
+
+
+  const targetP =
+    num("Pt");
+
+
+  const targetCa =
+    num("Cat");
+
+
+  const targetMg =
+    num("Mgt");
+
+
+  const ratioK =
+    num("Kr");
+
+
+  const ratioN =
+    num("Nr");
+
+
+  const deltaK =
+    num("dK");
+
+
+  const deltaMg =
+    num("dMg");
+
+
+  const deltaCa =
+    num("dCa");
+
+
+  const deltaP =
+    num("dP");
+
+
+  const values = [
+
+    V,
+    targetEC,
+
+    targetP,
+    targetCa,
+    targetMg,
+
+    ratioK,
+    ratioN,
+
+    deltaK,
+    deltaMg,
+    deltaCa,
+    deltaP
+
+  ];
+
+
+  if (
+
+    values.some(
+      value =>
+        !Number.isFinite(value)
+        ||
+        value < 0
+    )
+
+    ||
+
+    V <= 0
+
+    ||
+
+    ratioN <= 0
+
+  ) {
+
+    $("out").textContent =
+      "입력값을 확인하세요.";
+
+    return;
+
+  }
+
+
+
+  /*
+  ==================================================
+
+        STEP 1
+        A/B 800배 고정
+
+  ==================================================
+  */
+
+
+  const aML =
+    AB_MIN * V;
+
+
+  const bML =
+    AB_MIN * V;
+
+
+  const aGram =
+    aML * RHO_AB;
+
+
+  const bGram =
+    bML * RHO_AB;
+
+
+
+  /*
+  A/B가 공급하는
+  elemental ppm
+  */
+
+
+  let N =
+
+    (
+      aGram * A.N
+      +
+      bGram * B.N
+    )
+
+    * 1000
+
+    / V;
+
+
+
+  let P =
+
+    bGram
+    *
+    B.P
+    *
+    1000
+    /
+    V;
+
+
+
+  let K =
+
+    (
+      aGram * A.K
+      +
+      bGram * B.K
+    )
+
+    * 1000
+
+    / V;
+
+
+
+  let Ca =
+
+    aGram
+    *
+    A.Ca
+    *
+    1000
+    /
+    V;
+
+
+
+  let Mg =
+
+    bGram
+    *
+    B.Mg
+    *
+    1000
+    /
+    V;
+
+
+
+  const base = {
+
+    N,
+    P,
+    K,
+    Ca,
+    Mg
+
+  };
+
+
+
+  /*
+  ==================================================
+
+        STEP 2
+        P 보정
+
+        KH2PO4
+
+  ==================================================
+  */
+
+
+  const mkpML =
+
+    Math.max(
+
+      0,
+
+      (targetP - P)
+
+      * V
+
+      /
+
+      (
+        100
+        *
+        F.MKP_P
+      )
+
+    );
+
+
+
+  const mkpP =
+
+    mkpML
+
+    *
+    100
+
+    *
+    F.MKP_P
+
+    /
+    V;
+
+
+
+  const mkpK =
+
+    mkpML
+
+    *
+    100
+
+    *
+    F.MKP_K
+
+    /
+    V;
+
+
+
+  P += mkpP;
+
+  K += mkpK;
+
+
+
+  /*
+  ==================================================
+
+        STEP 3
+        Ca 보정
+
+        질산칼슘
+
+  ==================================================
+  */
+
+
+  const calciumML =
+
+    Math.max(
+
+      0,
+
+      (targetCa - Ca)
+
+      * V
+
+      /
+
+      (
+        100
+        *
+        F.Ca
+      )
+
+    );
+
+
+
+  const calciumCa =
+
+    calciumML
+
+    *
+    100
+
+    *
+    F.Ca
+
+    /
+    V;
+
+
+
+  const calciumN =
+
+    calciumML
+
+    *
+    100
+
+    *
+    F.CaN
+
+    /
+    V;
+
+
+
+  Ca += calciumCa;
+
+  N += calciumN;
+
+
+
+  /*
+  ==================================================
+
+        STEP 4
+        Mg 보정
+
+        MgSO4·7H2O
+
+  ==================================================
+  */
+
+
+  const magnesiumML =
+
+    Math.max(
+
+      0,
+
+      (targetMg - Mg)
+
+      * V
+
+      /
+
+      (
+        100
+        *
+        F.MgSO4
+      )
+
+    );
+
+
+
+  const magnesiumMg =
+
+    magnesiumML
+
+    *
+    100
+
+    *
+    F.MgSO4
+
+    /
+    V;
+
+
+
+  Mg += magnesiumMg;
+
+
+
+  /*
+  ==================================================
+
+        STEP 5
+        K 보정
+
+        K2SO4
+
+  ==================================================
+
+  질산칼슘으로 추가된 N
+
+  +
+
+  KH2PO4로 추가된 K
+
+  모두 반영한 후
+  최종 N:K를 맞춤.
+
+  ==================================================
+  */
+
+
+  const targetRatio =
+    ratioK / ratioN;
+
+
+  const targetKppm =
+    N * targetRatio;
+
+
+
+  const potassiumML =
+
+    Math.max(
+
+      0,
+
+      (targetKppm - K)
+
+      * V
+
+      /
+
+      (
+        100
+        *
+        F.K2SO4
+      )
+
+    );
+
+
+
+  const potassiumK =
+
+    potassiumML
+
+    *
+    100
+
+    *
+    F.K2SO4
+
+    /
+    V;
+
+
+
+  K += potassiumK;
+
+
+
+  /*
+  ==================================================
+
+        STEP 6
+        예상 EC
+
+  ==================================================
+  */
+
+
+  /*
+  AB 1.25 mL/L
+
+  =
+
+  100 mL당
+
+  A 125 µL
+  B 125 µL
+  */
+
+
+  const abMicroPer100mL =
+
+    aML
+
+    *
+    1000
+
+    *
+    (
+      100
+      /
+      (V * 1000)
+    );
+
+
+
+  const ecFromAB =
+    ecAB(abMicroPer100mL);
+
+
+
+  /*
+  보정 stock ΔEC 입력 기준
+
+  100 mL에
+  stock 100 µL
+
+  =
+
+  stock 1 mL/L
+
+  따라서
+
+  EC contribution
+
+  =
+
+  ΔEC × stock(mL) / batch(L)
+  */
+
+
+  const ecFromP =
+
+    deltaP
+    *
+    mkpML
+    /
+    V;
+
+
+  const ecFromCa =
+
+    deltaCa
+    *
+    calciumML
+    /
+    V;
+
+
+  const ecFromMg =
+
+    deltaMg
+    *
+    magnesiumML
+    /
+    V;
+
+
+  const ecFromK =
+
+    deltaK
+    *
+    potassiumML
+    /
+    V;
+
+
+
+  const predictedEC =
+
+    ecFromAB
+    +
+    ecFromP
+    +
+    ecFromCa
+    +
+    ecFromMg
+    +
+    ecFromK;
+
+
+
+  /*
+  ==================================================
+
+                  결과표
+
+  ==================================================
+  */
+
+
+  const actualRatio =
+    N > 0
+      ? K / N
+      : 0;
+
+
+
+  $("out").innerHTML = `
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>투입물</th>
+          <th>투입량</th>
+          <th>단위</th>
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        <tr>
+          <td>A액 (800배)</td>
+          <td>${disp(aML)}</td>
+          <td>${unit()}</td>
+        </tr>
+
+        <tr>
+          <td>B액 (800배)</td>
+          <td>${disp(bML)}</td>
+          <td>${unit()}</td>
+        </tr>
+
+        <tr>
+          <td>KH₂PO₄ 10 wt%</td>
+          <td>${disp(mkpML)}</td>
+          <td>${unit()}</td>
+        </tr>
+
+        <tr>
+          <td>질산칼슘 10 wt%</td>
+          <td>${disp(calciumML)}</td>
+          <td>${unit()}</td>
+        </tr>
+
+        <tr>
+          <td>MgSO₄·7H₂O 10 wt%</td>
+          <td>${disp(magnesiumML)}</td>
+          <td>${unit()}</td>
+        </tr>
+
+        <tr>
+          <td>K₂SO₄ 10 wt%</td>
+          <td>${disp(potassiumML)}</td>
+          <td>${unit()}</td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>최종 조성</th>
+          <th>값</th>
+          <th>단위</th>
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        <tr>
+          <td>N</td>
+          <td>${N.toFixed(1)}</td>
+          <td>ppm</td>
+        </tr>
+
+        <tr>
+          <td>P</td>
+          <td>${P.toFixed(1)}</td>
+          <td>ppm</td>
+        </tr>
+
+        <tr>
+          <td>K</td>
+          <td>${K.toFixed(1)}</td>
+          <td>ppm</td>
+        </tr>
+
+        <tr>
+          <td>Ca</td>
+          <td>${Ca.toFixed(1)}</td>
+          <td>ppm</td>
+        </tr>
+
+        <tr>
+          <td>Mg</td>
+          <td>${Mg.toFixed(1)}</td>
+          <td>ppm</td>
+        </tr>
+
+        <tr>
+          <td>N:K</td>
+          <td>1:${actualRatio.toFixed(3)}</td>
+          <td>질량비</td>
+        </tr>
+
+        <tr>
+          <td>
+            <strong>
+              예상 최종 EC
+            </strong>
+          </td>
+
+          <td>
+            <strong>
+              ${predictedEC.toFixed(3)}
+            </strong>
+          </td>
+
+          <td>
+            <strong>
+              mS/cm
+            </strong>
+          </td>
+        </tr>
+
+        <tr>
+          <td>목표 EC</td>
+          <td>${targetEC.toFixed(3)}</td>
+          <td>mS/cm</td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  `;
+
+
+
+  /*
+  ==================================================
+
+                    경고
+
+  ==================================================
+  */
+
+
+  const warnings = [];
+
+
+  if (base.P > targetP) {
+
+    warnings.push(
+      "AB만으로 P가 목표보다 높아 KH₂PO₄ 투입량이 0입니다."
+    );
+
+  }
+
+
+  if (base.Ca > targetCa) {
+
+    warnings.push(
+      "AB만으로 Ca가 목표보다 높아 질산칼슘 투입량이 0입니다."
+    );
+
+  }
+
+
+  if (base.Mg > targetMg) {
+
+    warnings.push(
+      "AB만으로 Mg가 목표보다 높아 MgSO₄ 투입량이 0입니다."
+    );
+
+  }
+
+
+  if (
+    base.K + mkpK
+    >
+    targetKppm + 0.05
+  ) {
+
+    warnings.push(
+      "AB + KH₂PO₄가 공급하는 K가 목표 N:K보다 높아 K₂SO₄ 투입량이 0입니다. 현재 조건에서는 목표 N:K를 정확히 맞출 수 없습니다."
+    );
+
+  }
+
+
+  const ecDifference =
+    predictedEC - targetEC;
+
+
+  if (
+    Math.abs(ecDifference)
+    >
+    0.05
+  ) {
+
+    warnings.push(
+
+      `예상 EC가 목표보다 ${
+
+        ecDifference > 0
+          ? "높습니다"
+          : "낮습니다"
+
+      } (${Math.abs(ecDifference).toFixed(3)} mS/cm 차이). EC를 맞추기 위해 AB를 800배 이하로 낮추지는 않습니다.`
+
+    );
+
+  }
+
+
+
+  /*
+  ==================================================
+
+                    요약
+
+  ==================================================
+  */
+
+
+  $("meta").textContent =
+
+`AB = A/B 각각 ${AB_MIN.toFixed(2)} mL/L (800배 고정)
+
+예상 EC = ${predictedEC.toFixed(3)} mS/cm
+목표 EC = ${targetEC.toFixed(3)} mS/cm
+
+최종 ppm
+
+N  = ${N.toFixed(1)}
+P  = ${P.toFixed(1)}
+K  = ${K.toFixed(1)}
+Ca = ${Ca.toFixed(1)}
+Mg = ${Mg.toFixed(1)}
+
+최종 N:K = 1:${actualRatio.toFixed(3)}
+목표 N:K = 1:${targetRatio.toFixed(3)}
+
+${
+  warnings.length
+
+    ? "주의\n- "
+      +
+      warnings.join("\n- ")
+
+    : "현재 설정에서 별도 경고 없음"
+}`;
+
+
+
+  /*
+  ==================================================
+
+                    DEBUG
+
+  ==================================================
+  */
+
+
+  $("debug").textContent =
+
+`[AB base ppm]
+
+N  = ${base.N.toFixed(4)}
+P  = ${base.P.toFixed(4)}
+K  = ${base.K.toFixed(4)}
+Ca = ${base.Ca.toFixed(4)}
+Mg = ${base.Mg.toFixed(4)}
+
+
+[보정 기여 ppm]
+
+KH2PO4
+P  +${mkpP.toFixed(4)}
+K  +${mkpK.toFixed(4)}
+
+Calcium nitrate
+Ca +${calciumCa.toFixed(4)}
+N  +${calciumN.toFixed(4)}
+
+MgSO4·7H2O
+Mg +${magnesiumMg.toFixed(4)}
+
+K2SO4
+K  +${potassiumK.toFixed(4)}
+
+
+[EC 기여]
+
+AB   = ${ecFromAB.toFixed(6)}
+MKP  = ${ecFromP.toFixed(6)}
+Ca   = ${ecFromCa.toFixed(6)}
+Mg   = ${ecFromMg.toFixed(6)}
+K    = ${ecFromK.toFixed(6)}
+
+TOTAL = ${predictedEC.toFixed(6)} mS/cm
+
+
+[AB EC table input]
+
+${abMicroPer100mL.toFixed(3)} µL / 100 mL
+
+A/B 각각 동일 투입량
+
+
+[Correction stock]
+
+10 wt%
+
+stock density
+= 1 g/mL 가정`;
+
+
+
+  /*
+  ==================================================
+
+              입력값 localStorage 저장
+
+  ==================================================
+  */
+
+
+  localStorage.setItem(
+
+    "nutrient-calculator-v11",
+
+    JSON.stringify({
+
+      V,
+      Et: targetEC,
+
+      Pt: targetP,
+      Cat: targetCa,
+      Mgt: targetMg,
+
+      Kr: ratioK,
+      Nr: ratioN,
+
+      dK: deltaK,
+      dMg: deltaMg,
+      dCa: deltaCa,
+      dP: deltaP
+
+    })
+
+  );
+
+}
+
+
+
+/*
+====================================================
+
+                UI EVENT
+
+====================================================
+*/
+
+
+$("calc").addEventListener(
+  "click",
+  calculate
+);
+
+
+
+$("uUL").addEventListener(
+  "click",
+  () => {
+
+    displayML = false;
+
+    $("uUL")
+      .classList
+      .add("on");
+
+    $("uML")
+      .classList
+      .remove("on");
+
+    calculate();
+
+  }
+);
+
+
+
+$("uML").addEventListener(
+  "click",
+  () => {
+
+    displayML = true;
+
+    $("uML")
+      .classList
+      .add("on");
+
+    $("uUL")
+      .classList
+      .remove("on");
+
+    calculate();
+
+  }
+);
+
+
+
+/*
+====================================================
+
+              저장값 불러오기
+
+====================================================
+*/
+
+
+try {
+
+  const saved =
+    JSON.parse(
+
+      localStorage.getItem(
+        "nutrient-calculator-v11"
+      )
+
+    );
+
+
+  if (saved) {
+
+    Object
+      .entries(saved)
+      .forEach(
+
+        ([key, value]) => {
+
+          if ($(key)) {
+
+            $(key).value =
+              value;
+
+          }
+
+        }
+
+      );
+
+  }
+
+}
+catch (error) {
+
+  console.warn(
+    "저장값을 불러오지 못했습니다.",
+    error
+  );
+
+}
+
+
+
+/*
+====================================================
+
+             SERVICE WORKER
+
+====================================================
+*/
+
+
+if (
+  "serviceWorker"
+  in navigator
+) {
+
+  window.addEventListener(
+
+    "load",
+
+    () => {
+
+      navigator
+        .serviceWorker
+        .register(
+          "./service-worker.js"
+        )
+
+        .then(
+          registration => {
+
+            console.log(
+              "Service Worker 등록 완료:",
+              registration.scope
+            );
+
+          }
+        )
+
+        .catch(
+          error => {
+
+            console.error(
+              "Service Worker 등록 실패:",
+              error
+            );
+
+          }
+        );
+
+    }
+
+  );
+
+}
+
+
+
+/*
+====================================================
+
+               최초 계산
+
+====================================================
+*/
+
+
+calculate();
+
+
+</script>
+
+
+</body>
+
+</html>
